@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Faridpur Polytechnic Institute — Library Management System</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --ink:#142019; --green:#1f4435; --green-soft:#2d5a47; --green-deep:#16302559;
+    --parchment:#f6f2e8; --paper:#fffdf8; --paper-2:#f0ebdd; --paper-3:#e8e1cf;
+    --brass:#b08433; --brass-deep:#8a6526;
+    --line:#ddd5c3; --line-strong:#c4b89c;
+    --txt:#23332b; --txt-soft:#5c6b61; --txt-faint:#8a9389;
+    --sage:#3f7d5c; --sage-bg:#e4efe6;
+    --amber:#a9742a; --amber-bg:#f5ead4;
+    --rust:#a8492f; --rust-bg:#f4ddd4;
+    --blue:#3a6280; --blue-bg:#e1ebf1;
+    --shadow:0 1px 2px rgba(20,32,25,.05), 0 6px 18px rgba(20,32,25,.06);
+    --shadow-lg:0 18px 50px rgba(20,32,25,.18);
+    --radius:11px;
+  }
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{margin:0;background:var(--parchment);color:var(--txt);font-family:'Inter',system-ui,sans-serif;font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3,h4{font-family:'Fraunces',Georgia,serif;font-weight:600;letter-spacing:-.01em;color:var(--ink);margin:0;}
+  .mono{font-family:'Space Mono',ui-monospace,monospace;}
+  button{font-family:inherit;cursor:pointer;}
+  ::selection{background:var(--brass);color:#fff;}
+  .hidden{display:none !important;}
+
+  /* ============ LOGIN ============ */
+  .login{position:fixed;inset:0;background:linear-gradient(160deg,#1c3e30,#142019);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px;}
+  .login-card{background:var(--paper);border-radius:16px;box-shadow:var(--shadow-lg);width:100%;max-width:410px;overflow:hidden;animation:rise .3s ease;}
+  .login-top{background:var(--green);color:#f1ede0;padding:30px 30px 26px;text-align:center;border-bottom:3px solid var(--brass);}
+  .login-top .crest{width:52px;height:52px;border:2px solid var(--brass);border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;font-family:'Fraunces',serif;font-weight:700;color:var(--brass);font-size:26px;}
+  .login-top h1{color:#fbf8ef;font-size:21px;line-height:1.25;}
+  .login-top .sub{font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--brass);margin-top:8px;}
+  .login-body{padding:26px 30px 30px;}
+  .login-body h2{font-size:18px;margin-bottom:4px;}
+  .login-body .lead{font-size:13px;color:var(--txt-soft);margin-bottom:20px;}
+  .login-body label.fld{margin-bottom:14px;display:block;}
+  .login-hint{font-size:12px;color:var(--txt-faint);background:var(--paper-2);border:1px solid var(--line);border-radius:8px;padding:10px 12px;margin-top:16px;text-align:center;}
+  .login-err{color:var(--rust);font-size:13px;font-weight:600;margin-top:10px;display:none;}
+  .login-err.show{display:block;}
+
+  /* ============ APP ============ */
+  .app{display:flex;min-height:100vh;}
+  .side{width:256px;flex-shrink:0;background:var(--green);color:#e8ecdf;display:flex;flex-direction:column;position:sticky;top:0;height:100vh;border-right:1px solid rgba(0,0,0,.15);}
+  .brand{padding:24px 22px 20px;border-bottom:1px solid rgba(255,255,255,.09);display:flex;gap:13px;align-items:center;}
+  .brand .crest{width:42px;height:42px;border:1.5px solid var(--brass);border-radius:50%;display:grid;place-items:center;flex-shrink:0;font-family:'Fraunces',serif;font-weight:700;color:var(--brass);font-size:21px;}
+  .brand h1{color:#fbf8ef;font-size:16px;line-height:1.2;}
+  .brand .sub{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--brass);margin-top:4px;}
+  .nav{padding:12px 12px;flex:1;overflow-y:auto;}
+  .nav-label{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:rgba(232,236,223,.42);padding:10px 12px 6px;}
+  .nav button{display:flex;align-items:center;gap:11px;width:100%;text-align:left;background:none;border:none;color:#dfe4d6;padding:10px 12px;border-radius:8px;font-size:13.5px;font-weight:500;margin-bottom:2px;transition:background .15s,color .15s;}
+  .nav button:hover{background:rgba(255,255,255,.06);color:#fff;}
+  .nav button.active{background:var(--brass);color:#1a1205;font-weight:600;}
+  .nav button .ic{width:18px;height:18px;flex-shrink:0;}
+  .nav button .badge{margin-left:auto;font-size:11px;background:rgba(255,255,255,.14);padding:1px 7px;border-radius:20px;font-weight:600;}
+  .nav button.active .badge{background:rgba(0,0,0,.18);color:#1a1205;}
+  .nav button .badge.alert{background:var(--rust);color:#fff;}
+  .side-foot{padding:13px 16px;border-top:1px solid rgba(255,255,255,.09);font-size:11.5px;color:rgba(232,236,223,.62);}
+  .side-foot .who{color:#fbf8ef;font-weight:600;font-size:12.5px;}
+  .side-foot button{background:none;border:none;color:var(--brass);font-size:12px;padding:0;margin-top:7px;display:flex;align-items:center;gap:6px;}
+  .side-foot button:hover{text-decoration:underline;}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
+  .topbar{display:flex;align-items:center;gap:14px;padding:16px 28px;border-bottom:1px solid var(--line);background:var(--parchment);position:sticky;top:0;z-index:30;}
+  .topbar h2{font-size:23px;}
+  .topbar .eyebrow{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass-deep);font-weight:700;margin-bottom:1px;}
+  .topbar .spacer{flex:1;}
+  .view{padding:24px 28px 64px;}
+
+  /* Buttons */
+  .btn{border:1px solid var(--line-strong);background:var(--paper);color:var(--txt);padding:9px 15px;border-radius:8px;font-size:13.5px;font-weight:600;display:inline-flex;align-items:center;gap:7px;transition:.15s;white-space:nowrap;}
+  .btn:hover{border-color:var(--brass);}
+  .btn .ic{width:16px;height:16px;}
+  .btn-primary{background:var(--green);border-color:var(--green);color:#fbf8ef;}
+  .btn-primary:hover{background:var(--green-soft);border-color:var(--green-soft);}
+  .btn-brass{background:var(--brass);border-color:var(--brass);color:#1a1205;}
+  .btn-brass:hover{background:var(--brass-deep);border-color:var(--brass-deep);color:#fff;}
+  .btn-ghost{background:transparent;border-color:transparent;}
+  .btn-ghost:hover{background:var(--paper-2);}
+  .btn-sm{padding:6px 11px;font-size:12.5px;}
+  .btn-danger{color:var(--rust);border-color:transparent;background:transparent;}
+  .btn-danger:hover{background:var(--rust-bg);}
+  .btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+  /* Stat cards */
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:15px;margin-bottom:24px;}
+  .stat{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:17px 17px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .stat::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--brass);}
+  .stat .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--txt-soft);font-weight:600;}
+  .stat .num{font-family:'Fraunces',serif;font-size:32px;font-weight:600;color:var(--ink);line-height:1.1;margin-top:5px;}
+  .stat .meta{font-size:12px;color:var(--txt-faint);margin-top:3px;}
+  .stat.warn::before{background:var(--rust);} .stat.warn .num{color:var(--rust);}
+  .stat.good::before{background:var(--sage);}
+  .stat.blue::before{background:var(--blue);}
+
+  .panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;}
+  .panel-head{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:1px solid var(--line);}
+  .panel-head h3{font-size:16px;}
+  .panel-head .spacer{flex:1;}
+  .section-gap{margin-top:22px;}
+
+  .toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap;}
+  .search{position:relative;flex:1;min-width:180px;max-width:380px;}
+  .search .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--txt-faint);}
+  .search input{padding-left:34px;}
+
+  input,select,textarea{font-family:inherit;font-size:13.5px;color:var(--txt);background:var(--paper);border:1px solid var(--line-strong);border-radius:8px;padding:9px 11px;width:100%;transition:.15s;}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(176,132,51,.15);}
+  select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235c6b61' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;padding-right:30px;}
+  label.fld .cap{font-size:12px;font-weight:600;color:var(--txt-soft);margin-bottom:5px;display:block;}
+
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt-soft);font-weight:700;padding:11px 16px;border-bottom:1px solid var(--line-strong);background:var(--paper-2);white-space:nowrap;}
+  td{padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tbody tr{transition:background .12s;}
+  tbody tr:hover{background:#fbf9f2;}
+  tbody tr:last-child td{border-bottom:none;}
+  .t-title{font-weight:600;color:var(--ink);}
+  .t-sub{font-size:12px;color:var(--txt-faint);}
+  .callno{font-size:12px;color:var(--brass-deep);}
+  td .row-actions{display:flex;gap:4px;justify-content:flex-end;}
+  .clickable{cursor:pointer;}
+
+  .tag{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 9px;border-radius:5px;letter-spacing:.03em;text-transform:uppercase;border:1px solid currentColor;white-space:nowrap;}
+  .tag .dot{width:6px;height:6px;border-radius:50%;background:currentColor;}
+  .tag.avail{color:var(--sage);background:var(--sage-bg);}
+  .tag.loan{color:var(--amber);background:var(--amber-bg);}
+  .tag.over{color:var(--rust);background:var(--rust-bg);}
+  .tag.none{color:var(--txt-faint);background:var(--paper-2);border-color:var(--line-strong);}
+  .tag.blue{color:var(--blue);background:var(--blue-bg);}
+  .pill{font-size:11.5px;font-weight:600;color:var(--txt-soft);background:var(--paper-2);border:1px solid var(--line);padding:2px 9px;border-radius:20px;white-space:nowrap;}
+
+  .empty{text-align:center;padding:50px 20px;color:var(--txt-faint);}
+  .empty .ic{width:40px;height:40px;margin:0 auto 12px;color:var(--line-strong);}
+  .empty h3{font-size:17px;color:var(--txt-soft);margin-bottom:5px;}
+  .empty p{font-size:13.5px;margin:0 0 16px;}
+
+  /* Modal & drawer */
+  .overlay{position:fixed;inset:0;background:rgba(20,32,25,.45);backdrop-filter:blur(2px);display:none;align-items:flex-start;justify-content:center;z-index:200;padding:40px 16px;overflow-y:auto;}
+  .overlay.open{display:flex;}
+  .modal{background:var(--paper);border-radius:14px;width:100%;max-width:560px;box-shadow:var(--shadow-lg);border:1px solid var(--line-strong);animation:rise .22s ease;}
+  @keyframes rise{from{transform:translateY(14px);opacity:0;}to{transform:none;opacity:1;}}
+  .modal.wide{max-width:720px;}
+  .modal-head{padding:20px 24px 16px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;}
+  .modal-head h3{font-size:20px;}
+  .modal-head .eyebrow{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--brass-deep);font-weight:700;margin-bottom:3px;}
+  .modal-head .x{margin-left:auto;background:none;border:none;color:var(--txt-faint);font-size:24px;line-height:1;padding:0 2px;}
+  .modal-head .x:hover{color:var(--rust);}
+  .modal-body{padding:22px 24px;display:grid;gap:15px;}
+  .modal-body .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .modal-foot{padding:15px 24px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--paper-2);border-radius:0 0 14px 14px;flex-wrap:wrap;}
+  .field-err{color:var(--rust);font-size:12px;margin-top:5px;display:none;}
+  .field-err.show{display:block;}
+
+  .toasts{position:fixed;bottom:24px;right:24px;z-index:600;display:flex;flex-direction:column;gap:10px;}
+  .toast{background:var(--ink);color:#f3efe3;padding:13px 16px;border-radius:9px;font-size:13.5px;font-weight:500;box-shadow:0 10px 30px rgba(0,0,0,.25);display:flex;align-items:center;gap:10px;animation:slidein .25s ease;max-width:340px;border-left:3px solid var(--brass);}
+  .toast.good{border-left-color:var(--sage);} .toast.bad{border-left-color:var(--rust);}
+  @keyframes slidein{from{transform:translateX(40px);opacity:0;}to{transform:none;opacity:1;}}
+
+  .two-col{display:grid;grid-template-columns:1.5fr 1fr;gap:20px;align-items:start;}
+  .activity{margin:0;padding:0 18px;}
+  .activity li{list-style:none;padding:11px 0;border-bottom:1px solid var(--line);display:flex;gap:11px;align-items:flex-start;font-size:13.5px;}
+  .activity li:last-child{border-bottom:none;}
+  .activity .ico{width:30px;height:30px;border-radius:7px;flex-shrink:0;display:grid;place-items:center;}
+  .activity .ico.out{background:var(--amber-bg);color:var(--amber);}
+  .activity .ico.in{background:var(--sage-bg);color:var(--sage);}
+  .activity .ico.res{background:var(--blue-bg);color:var(--blue);}
+  .activity .when{font-size:11.5px;color:var(--txt-faint);margin-top:1px;}
+
+  .hint{font-size:12.5px;color:var(--txt-faint);}
+  .danger-note{background:var(--rust-bg);border:1px solid #e6c3b6;color:#7a3322;padding:10px 13px;border-radius:8px;font-size:13px;}
+  .info-note{background:var(--blue-bg);border:1px solid #c2d6e2;color:#2c4d63;padding:10px 13px;border-radius:8px;font-size:13px;}
+  .fine-due{color:var(--rust);font-weight:700;}
+
+  /* Charts */
+  .chart-bars{display:flex;flex-direction:column;gap:11px;padding:18px;}
+  .bar-row{display:grid;grid-template-columns:130px 1fr 42px;gap:10px;align-items:center;font-size:13px;}
+  .bar-row .name{color:var(--txt);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .bar-track{background:var(--paper-2);border-radius:6px;height:14px;overflow:hidden;}
+  .bar-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--brass));border-radius:6px;transition:width .5s ease;}
+  .bar-row .val{text-align:right;font-weight:700;color:var(--green);font-size:13px;}
+
+  .donut-wrap{display:flex;align-items:center;gap:22px;padding:18px;flex-wrap:wrap;}
+  .legend{display:flex;flex-direction:column;gap:8px;font-size:13px;flex:1;min-width:140px;}
+  .legend .li{display:flex;align-items:center;gap:8px;}
+  .legend .sw{width:12px;height:12px;border-radius:3px;flex-shrink:0;}
+  .legend .lv{margin-left:auto;font-weight:700;color:var(--txt-soft);}
+
+  /* Detail rows */
+  .kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;font-size:13.5px;}
+  .kv dt{color:var(--txt-faint);font-weight:600;}
+  .kv dd{margin:0;color:var(--txt);font-weight:500;}
+  .detail-head{display:flex;gap:16px;align-items:flex-start;margin-bottom:6px;}
+  .avatar{width:54px;height:54px;border-radius:12px;background:var(--green);color:var(--brass);display:grid;place-items:center;font-family:'Fraunces',serif;font-size:24px;font-weight:700;flex-shrink:0;}
+
+  .menu-btn{display:none;}
+  .scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:80;display:none;}
+  .scrim.open{display:block;}
+
+  .about-card{max-width:680px;}
+  .about-hero{background:var(--green);color:#f1ede0;padding:34px 32px;border-radius:var(--radius) var(--radius) 0 0;border-bottom:3px solid var(--brass);}
+  .about-hero .crest{width:48px;height:48px;border:2px solid var(--brass);border-radius:50%;display:grid;place-items:center;margin-bottom:14px;font-family:'Fraunces',serif;font-weight:700;color:var(--brass);font-size:24px;}
+  .about-hero h2{color:#fbf8ef;font-size:25px;}
+  .about-hero .sub{color:var(--brass);font-size:12px;letter-spacing:.14em;text-transform:uppercase;margin-top:8px;}
+  .about-body{padding:26px 32px 30px;}
+
+  @media print{
+    .side,.topbar,.scrim,.no-print,.toasts{display:none !important;}
+    .view{padding:0 !important;}
+    body{background:#fff;}
+    .panel{box-shadow:none;border:1px solid #999;}
+    @page{margin:1.4cm;}
+  }
+
+  @media(max-width:980px){ .two-col{grid-template-columns:1fr;} }
+  @media(max-width:820px){
+    .side{position:fixed;left:0;top:0;z-index:90;transform:translateX(-100%);transition:transform .25s;box-shadow:0 0 40px rgba(0,0,0,.3);}
+    .side.open{transform:none;}
+    .menu-btn{display:inline-flex;}
+    .view{padding:18px 14px 50px;}
+    .topbar{padding:13px 14px;}
+    .topbar h2{font-size:20px;}
+    .scroll-x{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+    .scroll-x table{min-width:600px;}
+    .modal-body .grid2{grid-template-columns:1fr;}
+    .bar-row{grid-template-columns:96px 1fr 38px;}
+  }
+  @media(prefers-reduced-motion:reduce){*{animation:none !important;transition:none !important;}}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div class="login" id="login">
+  <div class="login-card">
+    <div class="login-top">
+      <div class="crest">F</div>
+      <h1>Faridpur Polytechnic Institute</h1>
+      <div class="sub">Library Management System</div>
+    </div>
+    <div class="login-body">
+      <h2>Librarian sign in</h2>
+      <p class="lead">Enter your credentials to access the management desk.</p>
+      <label class="fld"><span class="cap">Username</span><input id="lg-user" autocomplete="username" placeholder="Username"/></label>
+      <label class="fld"><span class="cap">Password</span><input id="lg-pass" type="password" autocomplete="current-password" placeholder="Password"/></label>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:6px" id="lg-btn">Sign in</button>
+      <div class="login-err" id="lg-err">Incorrect username or password.</div>
+      <div class="login-hint">Demo login — <b>admin</b> / <b>admin123</b></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div class="app hidden" id="app">
+  <aside class="side" id="side">
+    <div class="brand">
+      <div class="crest">F</div>
+      <div><h1 id="brand-name">Faridpur Polytechnic</h1><div class="sub">Library System</div></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label">Desk</div>
+      <button data-view="dashboard" class="active"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>Dashboard</button>
+      <button data-view="circulation"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>Circulation <span class="badge" id="nav-circ">0</span></button>
+      <button data-view="reservations"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>Reservations <span class="badge" id="nav-res">0</span></button>
+      <button data-view="fines"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>Fines <span class="badge" id="nav-fines">0</span></button>
+      <div class="nav-label">Collection</div>
+      <button data-view="catalogue"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>Catalogue <span class="badge" id="nav-books">0</span></button>
+      <button data-view="members"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>Members <span class="badge" id="nav-members">0</span></button>
+      <div class="nav-label">System</div>
+      <button data-view="reports"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>Reports</button>
+      <button data-view="settings"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Settings</button>
+      <button data-view="about"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>About</button>
+    </nav>
+    <div class="side-foot">
+      <div class="who">Musaddik</div>
+      <div>Roll 731286 · CST, 7th Sem</div>
+      <button id="logout-btn"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign out</button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="btn btn-ghost menu-btn" id="menu-btn" aria-label="Menu"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button>
+      <div><div class="eyebrow" id="bar-eyebrow">Desk</div><h2 id="bar-title">Dashboard</h2></div>
+      <div class="spacer"></div>
+      <div class="btn-row" id="bar-actions"></div>
+    </header>
+    <section class="view" id="view"></section>
+  </main>
+</div>
+
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div class="toasts" id="toasts"></div>
+<input type="file" id="file-input" accept=".json,.csv" class="hidden"/>
+
+<script>
+/* =====================================================================
+   Faridpur Polytechnic Institute — Library Management System
+   Author: Musaddik · Roll 731286 · CST, 7th Semester
+   Single-file application. State persisted to localStorage.
+   ===================================================================== */
+const STORE_KEY='fpi_library_v2';
+const SESSION_KEY='fpi_library_session';
+
+const DEFAULT_SETTINGS={ libName:'Faridpur Polytechnic', loanDays:14, finePerDay:2, currency:'৳', maxBooks:4 };
+const DEFAULT_AUTH={ user:'admin', pass:'admin123' };
+
+const I={
+  edit:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 013 3L12 15l-4 1 1-4z"/></svg>',
+  trash:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>',
+  plus:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>',
+  search:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>',
+  book:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
+  user:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+  out:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/></svg>',
+  in:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>',
+  renew:'<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>',
+  bookmark:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>',
+  coin:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>',
+  print:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>',
+  download:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+  upload:'<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+};
+
+/* ---------- State ---------- */
+let DB={ books:[], members:[], loans:[], reservations:[],
+  seq:{book:0,member:0,loan:0,res:0}, settings:{...DEFAULT_SETTINGS}, auth:{...DEFAULT_AUTH} };
+
+function save(){ localStorage.setItem(STORE_KEY,JSON.stringify(DB)); }
+function load(){ const r=localStorage.getItem(STORE_KEY); if(r){ try{ const d=JSON.parse(r);
+  DB={...DB,...d}; DB.settings={...DEFAULT_SETTINGS,...(d.settings||{})}; DB.auth={...DEFAULT_AUTH,...(d.auth||{})};
+  DB.reservations=d.reservations||[]; DB.seq={book:0,member:0,loan:0,res:0,...(d.seq||{})}; return true; }catch(e){} } return false; }
+
+/* ---------- Dates ---------- */
+function daysFromNow(n){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+n);return d.toISOString();}
+function todayISO(){const d=new Date();d.setHours(12,0,0,0);return d.toISOString();}
+function addDays(iso,n){const d=new Date(iso);d.setDate(d.getDate()+n);return d.toISOString();}
+function fmtDate(iso){if(!iso)return '—';return new Date(iso).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});}
+function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
+function money(n){return DB.settings.currency+Number(n||0).toFixed(2);}
+
+/* ---------- Call numbers ---------- */
+function callNumber(category,seq){const c=(category||'GEN').replace(/[^A-Za-z]/g,'').slice(0,3).toUpperCase().padEnd(3,'X');return `${c}-${String(seq).padStart(4,'0')}`;}
+
+/* ---------- Books ---------- */
+function addBook(d,silent){DB.seq.book++;const b={id:'B'+DB.seq.book,title:d.title.trim(),author:d.author.trim(),
+  category:d.category||'General',isbn:(d.isbn||'').trim(),year:d.year?Number(d.year):null,
+  copies:Math.max(1,Number(d.copies)||1),shelf:(d.shelf||'').trim(),callno:callNumber(d.category,DB.seq.book)};
+  DB.books.push(b);if(!silent)save();return b;}
+function updateBook(id,d){const b=bookById(id);if(!b)return;Object.assign(b,{title:d.title.trim(),author:d.author.trim(),
+  category:d.category||'General',isbn:(d.isbn||'').trim(),year:d.year?Number(d.year):null,
+  copies:Math.max(1,Number(d.copies)||1),shelf:(d.shelf||'').trim()});save();}
+function deleteBook(id){const a=copiesOnLoan(id);if(a>0){toast(a+' copy on loan — cannot delete.','bad');return false;}
+  DB.loans=DB.loans.filter(l=>l.bookId!==id);DB.reservations=DB.reservations.filter(r=>r.bookId!==id);
+  DB.books=DB.books.filter(b=>b.id!==id);save();return true;}
+function copiesOnLoan(id){return DB.loans.filter(l=>l.bookId===id&&!l.returnedAt).length;}
+function copiesAvailable(b){return b.copies-copiesOnLoan(b.id);}
+
+/* ---------- Members ---------- */
+function addMember(d,silent){DB.seq.member++;const m={id:'M'+DB.seq.member,code:'FPI-'+String(1000+DB.seq.member),
+  name:d.name.trim(),email:(d.email||'').trim(),phone:(d.phone||'').trim(),dept:(d.dept||'').trim(),
+  joined:silent?daysFromNow(-Math.floor(Math.random()*220)):todayISO()};
+  DB.members.push(m);if(!silent)save();return m;}
+function updateMember(id,d){const m=memberById(id);if(!m)return;Object.assign(m,{name:d.name.trim(),
+  email:(d.email||'').trim(),phone:(d.phone||'').trim(),dept:(d.dept||'').trim()});save();}
+function deleteMember(id){const a=memberActiveLoans(id);if(a>0){toast('Member has '+a+' book(s) out — cannot delete.','bad');return false;}
+  DB.loans=DB.loans.filter(l=>l.memberId!==id);DB.reservations=DB.reservations.filter(r=>r.memberId!==id);
+  DB.members=DB.members.filter(m=>m.id!==id);save();return true;}
+function memberActiveLoans(id){return DB.loans.filter(l=>l.memberId===id&&!l.returnedAt).length;}
+function memberOutstandingFine(id){return DB.loans.filter(l=>l.memberId===id&&l.returnedAt&&l.fine>0&&!l.finePaid)
+  .reduce((s,l)=>s+l.fine,0) + DB.loans.filter(l=>l.memberId===id&&!l.returnedAt).reduce((s,l)=>s+currentFine(l),0);}
+
+/* ---------- Circulation ---------- */
+function issueLoan(bookId,memberId,issuedAtISO,silent){const issued=issuedAtISO||todayISO();DB.seq.loan++;
+  const l={id:'L'+DB.seq.loan,bookId,memberId,issuedAt:issued,dueAt:addDays(issued,DB.settings.loanDays),
+    returnedAt:null,fine:0,finePaid:false,renewals:0};DB.loans.push(l);
+  // fulfil reservation if any
+  const res=DB.reservations.find(r=>r.bookId===bookId&&r.memberId===memberId&&r.status!=='fulfilled'&&r.status!=='cancelled');
+  if(res){res.status='fulfilled';res.fulfilledAt=issued;}
+  if(!silent)save();return l;}
+function returnLoan(id,whenISO,silent){const l=DB.loans.find(x=>x.id===id);if(!l||l.returnedAt)return;
+  const when=whenISO||todayISO();l.returnedAt=when;const late=daysBetween(l.dueAt,when);
+  l.fine=late>0?+(late*DB.settings.finePerDay).toFixed(2):0;
+  // promote next reservation for this book to ready
+  promoteReservation(l.bookId);
+  if(!silent)save();return l;}
+function renewLoan(id){const l=DB.loans.find(x=>x.id===id);if(!l||l.returnedAt)return;
+  l.dueAt=addDays(todayISO(),DB.settings.loanDays);l.renewals=(l.renewals||0)+1;save();}
+function loanStatus(l){if(l.returnedAt)return 'returned';return daysBetween(l.dueAt,todayISO())>0?'overdue':'active';}
+function activeLoans(){return DB.loans.filter(l=>!l.returnedAt);}
+function overdueLoans(){return activeLoans().filter(l=>loanStatus(l)==='overdue');}
+function currentFine(l){const late=daysBetween(l.dueAt,todayISO());return late>0?+(late*DB.settings.finePerDay).toFixed(2):0;}
+
+/* ---------- Reservations ---------- */
+function addReservation(bookId,memberId){DB.seq.res++;const ready=copiesAvailable(bookById(bookId))>0;
+  const r={id:'R'+DB.seq.res,bookId,memberId,createdAt:todayISO(),status:ready?'ready':'waiting'};
+  DB.reservations.push(r);save();return r;}
+function promoteReservation(bookId){const q=DB.reservations.filter(r=>r.bookId===bookId&&r.status==='waiting')
+  .sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt));if(q.length&&copiesAvailable(bookById(bookId))>0){q[0].status='ready';}}
+function cancelReservation(id){const r=DB.reservations.find(x=>x.id===id);if(r){r.status='cancelled';save();}}
+function activeReservations(){return DB.reservations.filter(r=>r.status==='waiting'||r.status==='ready');}
+
+/* ---------- Lookups ---------- */
+const bookById=id=>DB.books.find(b=>b.id===id);
+const memberById=id=>DB.members.find(m=>m.id===id);
+
+/* ---------- Seed ---------- */
+function seed(){
+  DB={books:[],members:[],loans:[],reservations:[],seq:{book:0,member:0,loan:0,res:0},
+    settings:{...DEFAULT_SETTINGS},auth:{...DEFAULT_AUTH}};
+  const books=[
+    ['The Midnight Library','Matt Haig','Fiction','978-0525559474',2020,3,'A-12'],
+    ['Sapiens','Yuval Noah Harari','History','978-0062316097',2011,2,'C-04'],
+    ['Atomic Habits','James Clear','Self-Help','978-0735211292',2018,4,'D-21'],
+    ['Dune','Frank Herbert','Sci-Fi','978-0441013593',1965,2,'B-08'],
+    ['Educated','Tara Westover','Memoir','978-0399590504',2018,2,'E-02'],
+    ['The Silent Patient','Alex Michaelides','Thriller','978-1250301697',2019,3,'B-15'],
+    ['Thinking, Fast and Slow','Daniel Kahneman','Psychology','978-0374533557',2011,1,'D-09'],
+    ['Project Hail Mary','Andy Weir','Sci-Fi','978-0593135204',2021,2,'B-09'],
+    ['Where the Crawdads Sing','Delia Owens','Fiction','978-0735219090',2018,3,'A-18'],
+    ['The Pragmatic Programmer','Hunt & Thomas','Technology','978-0135957059',2019,2,'T-01'],
+    ['Clean Code','Robert C. Martin','Technology','978-0132350884',2008,2,'T-02'],
+    ['Introduction to Algorithms','Cormen et al.','Technology','978-0262033848',2009,2,'T-03'],
+    ['The Alchemist','Paulo Coelho','Fiction','978-0061122415',1988,4,'A-03'],
+    ['A Brief History of Time','Stephen Hawking','History','978-0553380163',1988,2,'C-11'],
+    ['Deep Work','Cal Newport','Self-Help','978-1455586691',2016,3,'D-25'],
+  ];
+  books.forEach(b=>addBook({title:b[0],author:b[1],category:b[2],isbn:b[3],year:b[4],copies:b[5],shelf:b[6]},true));
+  const members=[
+    ['Amara Okafor','amara.okafor@email.com','01711-900123','CST'],
+    ['Daniel Reyes','d.reyes@email.com','01711-900456','Electrical'],
+    ['Priya Sharma','priya.s@email.com','01711-900789','CST'],
+    ['Tom Whitfield','tom.w@email.com','01711-900234','Civil'],
+    ['Lena Brandt','lena.brandt@email.com','01711-900567','Mechanical'],
+    ['Rahim Uddin','rahim.u@email.com','01711-900345','CST'],
+    ['Sara Nguyen','sara.n@email.com','01711-900678','Electronics'],
+  ];
+  members.forEach(m=>addMember({name:m[0],email:m[1],phone:m[2],dept:m[3]},true));
+  issueLoan(DB.books[2].id,DB.members[0].id,daysFromNow(-3),true);
+  issueLoan(DB.books[3].id,DB.members[1].id,daysFromNow(-20),true);
+  issueLoan(DB.books[5].id,DB.members[2].id,daysFromNow(-1),true);
+  issueLoan(DB.books[10].id,DB.members[5].id,daysFromNow(-9),true);
+  issueLoan(DB.books[6].id,DB.members[6].id,daysFromNow(-18),true);
+  const r1=issueLoan(DB.books[1].id,DB.members[3].id,daysFromNow(-25),true);returnLoan(r1.id,daysFromNow(-12),true);
+  const r2=issueLoan(DB.books[12].id,DB.members[4].id,daysFromNow(-30),true);returnLoan(r2.id,daysFromNow(-19),true);
+  const r3=issueLoan(DB.books[0].id,DB.members[2].id,daysFromNow(-40),true);returnLoan(r3.id,daysFromNow(-28),true);
+  addReservation(DB.books[6].id,DB.members[0].id); // waiting on the single-copy book
+  save();
+}
+
+/* =====================================================================
+   RENDER
+   ===================================================================== */
+const el=id=>document.getElementById(id);
+const view=el('view');
+let activeView='dashboard';
+const VIEW_META={
+  dashboard:{eyebrow:'Desk',title:'Dashboard'},circulation:{eyebrow:'Desk',title:'Circulation'},
+  reservations:{eyebrow:'Desk',title:'Reservations'},fines:{eyebrow:'Desk',title:'Fines & Payments'},
+  catalogue:{eyebrow:'Collection',title:'Book Catalogue'},members:{eyebrow:'Collection',title:'Members'},
+  reports:{eyebrow:'System',title:'Reports & Analytics'},settings:{eyebrow:'System',title:'Settings'},
+  about:{eyebrow:'System',title:'About this Project'},
+};
+function setView(v){activeView=v;
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  el('bar-eyebrow').textContent=VIEW_META[v].eyebrow;el('bar-title').textContent=VIEW_META[v].title;
+  el('bar-actions').innerHTML='';closeSide();window.scrollTo(0,0);
+  ({dashboard:renderDashboard,circulation:renderCirculation,reservations:renderReservations,fines:renderFines,
+    catalogue:renderCatalogue,members:renderMembers,reports:renderReports,settings:renderSettings,about:renderAbout}[v])();
+}
+function refreshBadges(){
+  el('nav-books').textContent=DB.books.length;
+  el('nav-members').textContent=DB.members.length;
+  el('nav-circ').textContent=activeLoans().length;
+  el('nav-res').textContent=activeReservations().length;
+  const od=overdueLoans().length;const fb=el('nav-fines');
+  fb.textContent=od;fb.classList.toggle('alert',od>0);
+}
+
+/* ---------- DASHBOARD ---------- */
+function renderDashboard(){
+  const totalCopies=DB.books.reduce((s,b)=>s+b.copies,0);
+  const onLoan=activeLoans().length, overdue=overdueLoans().length;
+  const outstanding=DB.members.reduce((s,m)=>s+memberOutstandingFine(m.id),0);
+  const recent=[...DB.loans].map(l=>({l,t:new Date(l.returnedAt||l.issuedAt).getTime(),kind:l.returnedAt?'in':'out'}))
+    .concat(DB.reservations.map(r=>({r,t:new Date(r.createdAt).getTime(),kind:'res'})))
+    .sort((a,b)=>b.t-a.t).slice(0,7);
+  view.innerHTML=`
+    <div class="stat-grid">
+      <div class="stat"><div class="lbl">Titles</div><div class="num">${DB.books.length}</div><div class="meta">${totalCopies} copies total</div></div>
+      <div class="stat blue"><div class="lbl">Members</div><div class="num">${DB.members.length}</div><div class="meta">${memberWithLoansCount()} borrowing now</div></div>
+      <div class="stat good"><div class="lbl">On loan</div><div class="num">${onLoan}</div><div class="meta">${totalCopies-onLoan} available</div></div>
+      <div class="stat ${overdue?'warn':''}"><div class="lbl">Overdue</div><div class="num">${overdue}</div><div class="meta">${money(outstanding)} fines outstanding</div></div>
+    </div>
+    <div class="btn-row no-print" style="margin-bottom:22px">
+      <button class="btn btn-brass" id="qa-issue">${I.out} Issue a book</button>
+      <button class="btn" id="qa-book">${I.plus} Add title</button>
+      <button class="btn" id="qa-member">${I.plus} Add member</button>
+    </div>
+    <div class="two-col">
+      <div class="panel">
+        <div class="panel-head"><h3>Due back soon</h3><div class="spacer"></div><button class="btn btn-sm btn-ghost no-print" id="go-circ">Circulation →</button></div>
+        <div class="scroll-x">${dueSoonTable()}</div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h3>Recent activity</h3></div>
+        ${recent.length?`<ul class="activity">${recent.map(activityRow).join('')}</ul>`:`<div class="empty" style="padding:28px"><p>No activity yet.</p></div>`}
+      </div>
+    </div>`;
+  el('qa-issue').onclick=()=>openIssueModal();
+  el('qa-book').onclick=()=>openBookModal();
+  el('qa-member').onclick=()=>openMemberModal();
+  el('go-circ').onclick=()=>setView('circulation');
+}
+function memberWithLoansCount(){return new Set(activeLoans().map(l=>l.memberId)).size;}
+function dueSoonTable(){
+  const rows=activeLoans().sort((a,b)=>new Date(a.dueAt)-new Date(b.dueAt)).slice(0,7);
+  if(!rows.length)return `<div class="empty" style="padding:28px"><p>Nothing is on loan right now.</p></div>`;
+  return `<table><thead><tr><th>Title</th><th>Member</th><th>Due</th><th>Status</th></tr></thead><tbody>
+    ${rows.map(l=>{const b=bookById(l.bookId),m=memberById(l.memberId),st=loanStatus(l);
+      const left=daysBetween(todayISO(),l.dueAt);
+      const due=st==='overdue'?`<span class="fine-due">${Math.abs(left)}d late</span>`:`in ${left}d`;
+      return `<tr><td><div class="t-title">${esc(b?.title||'—')}</div><div class="t-sub mono">${b?.callno||''}</div></td>
+        <td>${esc(m?.name||'—')}</td><td>${fmtDate(l.dueAt)}<div class="t-sub">${due}</div></td><td>${statusTag(st)}</td></tr>`;}).join('')}
+  </tbody></table>`;
+}
+function activityRow(r){
+  if(r.kind==='res'){const b=bookById(r.r.bookId),m=memberById(r.r.memberId);
+    return `<li><span class="ico res">${I.bookmark}</span><div><div><b>${esc(m?.name||'—')}</b> reserved <i>${esc(b?.title||'—')}</i></div><div class="when">${fmtDate(r.r.createdAt)}</div></div></li>`;}
+  const b=bookById(r.l.bookId),m=memberById(r.l.memberId);
+  if(r.kind==='in')return `<li><span class="ico in">${I.in}</span><div><div><b>${esc(m?.name||'—')}</b> returned <i>${esc(b?.title||'—')}</i>${r.l.fine>0?` · <span class="fine-due">${money(r.l.fine)} fine</span>`:''}</div><div class="when">${fmtDate(r.l.returnedAt)}</div></div></li>`;
+  return `<li><span class="ico out">${I.out}</span><div><div><b>${esc(m?.name||'—')}</b> borrowed <i>${esc(b?.title||'—')}</i></div><div class="when">${fmtDate(r.l.issuedAt)}</div></div></li>`;
+}
+
+/* ---------- CATALOGUE ---------- */
+let bookSearch='',bookCat='All',bookSort='title';
+function renderCatalogue(){
+  el('bar-actions').innerHTML=`<button class="btn" id="imp-book">${I.upload} Import</button><button class="btn" id="exp-book">${I.download} Export</button><button class="btn btn-primary" id="add-book">${I.plus} Add title</button>`;
+  el('add-book').onclick=()=>openBookModal();
+  el('exp-book').onclick=exportBooksCSV;
+  el('imp-book').onclick=()=>triggerImport('books');
+  const cats=['All',...Array.from(new Set(DB.books.map(b=>b.category))).sort()];
+  view.innerHTML=`
+    <div class="toolbar">
+      <div class="search">${I.search}<input id="book-q" placeholder="Search title, author, ISBN, call no…" value="${esc(bookSearch)}"/></div>
+      <select id="book-cat" style="width:auto;min-width:140px">${cats.map(c=>`<option ${c===bookCat?'selected':''}>${esc(c)}</option>`).join('')}</select>
+      <select id="book-sort" style="width:auto;min-width:130px">
+        <option value="title">Sort: Title</option><option value="author">Sort: Author</option>
+        <option value="year">Sort: Newest</option><option value="avail">Sort: Availability</option></select>
+      <div class="spacer"></div><span class="hint" id="book-count"></span>
+    </div>
+    <div class="panel scroll-x" id="book-panel"></div>`;
+  el('book-sort').value=bookSort;
+  el('book-q').oninput=e=>{bookSearch=e.target.value;drawBookTable();};
+  el('book-cat').onchange=e=>{bookCat=e.target.value;drawBookTable();};
+  el('book-sort').onchange=e=>{bookSort=e.target.value;drawBookTable();};
+  drawBookTable();
+}
+function filteredBooks(){
+  const q=bookSearch.toLowerCase().trim();
+  let list=DB.books.filter(b=>{const c=bookCat==='All'||b.category===bookCat;
+    const m=!q||(b.title+' '+b.author+' '+b.isbn+' '+b.callno+' '+b.shelf).toLowerCase().includes(q);return c&&m;});
+  list.sort((a,b)=>{if(bookSort==='author')return a.author.localeCompare(b.author);
+    if(bookSort==='year')return (b.year||0)-(a.year||0);
+    if(bookSort==='avail')return copiesAvailable(b)-copiesAvailable(a);
+    return a.title.localeCompare(b.title);});
+  return list;
+}
+function drawBookTable(){
+  const list=filteredBooks(),panel=el('book-panel');
+  if(el('book-count'))el('book-count').textContent=`${list.length} of ${DB.books.length} titles`;
+  if(!list.length){panel.innerHTML=emptyState(I.book,'No titles found','Try a different search or add a new title.','Add title','add-book2');
+    const b=el('add-book2');if(b)b.onclick=()=>openBookModal();return;}
+  panel.innerHTML=`<table><thead><tr><th>Call no.</th><th>Title</th><th>Category</th><th>Shelf</th><th>Year</th><th>Availability</th><th></th></tr></thead><tbody>
+    ${list.map(b=>{const avail=copiesAvailable(b);
+      const tag=avail<=0?`<span class="tag loan"><span class="dot"></span>All out</span>`:`<span class="tag avail"><span class="dot"></span>${avail}/${b.copies}</span>`;
+      return `<tr class="clickable" data-open="${b.id}">
+        <td class="mono callno">${b.callno}</td>
+        <td><div class="t-title">${esc(b.title)}</div><div class="t-sub">${esc(b.author)}${b.isbn?` · ${esc(b.isbn)}`:''}</div></td>
+        <td><span class="pill">${esc(b.category)}</span></td><td class="mono t-sub">${esc(b.shelf||'—')}</td>
+        <td>${b.year||'—'}</td><td>${tag}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-sm btn-ghost" title="Edit" data-edit="${b.id}">${I.edit}</button>
+          <button class="btn btn-sm btn-danger" title="Delete" data-del="${b.id}">${I.trash}</button></div></td></tr>`;}).join('')}
+  </tbody></table>`;
+  panel.querySelectorAll('[data-open]').forEach(tr=>tr.onclick=e=>{if(e.target.closest('[data-edit],[data-del]'))return;openBookDetail(tr.dataset.open);});
+  panel.querySelectorAll('[data-edit]').forEach(b=>b.onclick=e=>{e.stopPropagation();openBookModal(b.dataset.edit);});
+  panel.querySelectorAll('[data-del]').forEach(b=>b.onclick=e=>{e.stopPropagation();const bk=bookById(b.dataset.del);
+    confirmModal('Delete title?',`<p class="hint">“${esc(bk.title)}” and its history will be removed permanently.</p>`,()=>{
+      if(deleteBook(bk.id)){toast('Title deleted.','good');refreshBadges();drawBookTable();}});});
+}
+
+/* ---------- MEMBERS ---------- */
+let memberSearch='';
+function renderMembers(){
+  el('bar-actions').innerHTML=`<button class="btn" id="imp-mem">${I.upload} Import</button><button class="btn" id="exp-mem">${I.download} Export</button><button class="btn btn-primary" id="add-member">${I.plus} Add member</button>`;
+  el('add-member').onclick=()=>openMemberModal();
+  el('exp-mem').onclick=exportMembersCSV;
+  el('imp-mem').onclick=()=>triggerImport('members');
+  view.innerHTML=`
+    <div class="toolbar"><div class="search">${I.search}<input id="m-q" placeholder="Search name, email, dept, member no…" value="${esc(memberSearch)}"/></div>
+      <div class="spacer"></div><span class="hint" id="m-count"></span></div>
+    <div class="panel scroll-x" id="m-panel"></div>`;
+  el('m-q').oninput=e=>{memberSearch=e.target.value;drawMemberTable();};
+  drawMemberTable();
+}
+function filteredMembers(){const q=memberSearch.toLowerCase().trim();
+  return DB.members.filter(m=>!q||(m.name+' '+m.email+' '+m.code+' '+m.phone+' '+m.dept).toLowerCase().includes(q))
+    .sort((a,b)=>a.name.localeCompare(b.name));}
+function drawMemberTable(){
+  const list=filteredMembers(),panel=el('m-panel');
+  el('m-count').textContent=`${list.length} of ${DB.members.length} members`;
+  if(!list.length){panel.innerHTML=emptyState(I.user,'No members found','Add a member to start issuing books.','Add member','add-member2');
+    const b=el('add-member2');if(b)b.onclick=()=>openMemberModal();return;}
+  panel.innerHTML=`<table><thead><tr><th>Member no.</th><th>Name</th><th>Dept</th><th>Contact</th><th>Books out</th><th>Fines</th><th></th></tr></thead><tbody>
+    ${list.map(m=>{const out=memberActiveLoans(m.id),fine=memberOutstandingFine(m.id);
+      return `<tr class="clickable" data-open="${m.id}">
+        <td class="mono callno">${m.code}</td><td class="t-title">${esc(m.name)}</td>
+        <td><span class="pill">${esc(m.dept||'—')}</span></td>
+        <td>${esc(m.email||'—')}<div class="t-sub">${esc(m.phone||'')}</div></td>
+        <td>${out?`<span class="tag loan"><span class="dot"></span>${out} out</span>`:`<span class="tag none">None</span>`}</td>
+        <td>${fine>0?`<span class="fine-due">${money(fine)}</span>`:'—'}</td>
+        <td><div class="row-actions">
+          <button class="btn btn-sm btn-ghost" title="Edit" data-edit="${m.id}">${I.edit}</button>
+          <button class="btn btn-sm btn-danger" title="Delete" data-del="${m.id}">${I.trash}</button></div></td></tr>`;}).join('')}
+  </tbody></table>`;
+  panel.querySelectorAll('[data-open]').forEach(tr=>tr.onclick=e=>{if(e.target.closest('[data-edit],[data-del]'))return;openMemberDetail(tr.dataset.open);});
+  panel.querySelectorAll('[data-edit]').forEach(b=>b.onclick=e=>{e.stopPropagation();openMemberModal(b.dataset.edit);});
+  panel.querySelectorAll('[data-del]').forEach(b=>b.onclick=e=>{e.stopPropagation();const m=memberById(b.dataset.del);
+    confirmModal('Delete member?',`<p class="hint">“${esc(m.name)}” will be removed permanently.</p>`,()=>{
+      if(deleteMember(m.id)){toast('Member deleted.','good');refreshBadges();drawMemberTable();}});});
+}
+
+/* ---------- CIRCULATION ---------- */
+let circFilter='active';
+function renderCirculation(){
+  el('bar-actions').innerHTML=`<button class="btn btn-brass" id="issue-btn">${I.out} Issue a book</button>`;
+  el('issue-btn').onclick=()=>openIssueModal();
+  view.innerHTML=`
+    <div class="toolbar"><select id="circ-filter" style="width:auto;min-width:170px">
+      <option value="active">On loan now</option><option value="overdue">Overdue only</option>
+      <option value="returned">Returned (history)</option><option value="all">All loans</option></select>
+      <div class="spacer"></div><span class="hint" id="circ-count"></span></div>
+    <div class="panel scroll-x" id="circ-panel"></div>`;
+  const s=el('circ-filter');s.value=circFilter;s.onchange=e=>{circFilter=e.target.value;drawCircTable();};
+  drawCircTable();
+}
+function circList(){let list=[...DB.loans];
+  if(circFilter==='active')list=list.filter(l=>!l.returnedAt);
+  else if(circFilter==='overdue')list=list.filter(l=>loanStatus(l)==='overdue');
+  else if(circFilter==='returned')list=list.filter(l=>l.returnedAt);
+  return list.sort((a,b)=>{const ka=a.returnedAt?2:(loanStatus(a)==='overdue'?0:1),kb=b.returnedAt?2:(loanStatus(b)==='overdue'?0:1);
+    if(ka!==kb)return ka-kb;return new Date(a.dueAt)-new Date(b.dueAt);});}
+function drawCircTable(){
+  const list=circList(),panel=el('circ-panel');
+  el('circ-count').textContent=`${list.length} loan${list.length!==1?'s':''}`;
+  if(!list.length){panel.innerHTML=emptyState(I.out,'No loans here','Issue a book to a member to get started.','Issue a book','issue-btn2');
+    const b=el('issue-btn2');if(b)b.onclick=()=>openIssueModal();return;}
+  panel.innerHTML=`<table><thead><tr><th>Title</th><th>Member</th><th>Issued</th><th>Due</th><th>Status</th><th>Fine</th><th></th></tr></thead><tbody>
+    ${list.map(l=>{const b=bookById(l.bookId),m=memberById(l.memberId),st=loanStatus(l);
+      const fine=l.returnedAt?l.fine:currentFine(l);
+      const fineCell=fine>0?`<span class="fine-due">${money(fine)}</span>${l.returnedAt&&l.finePaid?' <span class="t-sub">(paid)</span>':''}`:'—';
+      const act=l.returnedAt?`<span class="t-sub">Returned ${fmtDate(l.returnedAt)}</span>`:
+        `<div class="row-actions"><button class="btn btn-sm" data-renew="${l.id}" title="Renew (extend ${DB.settings.loanDays}d)">${I.renew}</button><button class="btn btn-sm btn-primary" data-return="${l.id}">${I.in} Return</button></div>`;
+      return `<tr><td><div class="t-title">${esc(b?.title||'—')}</div><div class="t-sub mono">${b?.callno||''}${l.renewals?` · renewed ${l.renewals}×`:''}</div></td>
+        <td>${esc(m?.name||'—')}<div class="t-sub mono">${m?.code||''}</div></td>
+        <td>${fmtDate(l.issuedAt)}</td><td>${fmtDate(l.dueAt)}</td><td>${statusTag(st)}</td><td>${fineCell}</td>
+        <td style="text-align:right">${act}</td></tr>`;}).join('')}
+  </tbody></table>`;
+  panel.querySelectorAll('[data-return]').forEach(btn=>btn.onclick=()=>doReturn(btn.dataset.return));
+  panel.querySelectorAll('[data-renew]').forEach(btn=>btn.onclick=()=>{const l=DB.loans.find(x=>x.id===btn.dataset.renew);
+    confirmModal('Renew loan?',`<p class="hint">Due date will be extended to <b>${fmtDate(addDays(todayISO(),DB.settings.loanDays))}</b>.</p>`,()=>{
+      renewLoan(l.id);toast('Loan renewed.','good');drawCircTable();},'Confirm renew');});
+}
+function doReturn(loanId){const l=DB.loans.find(x=>x.id===loanId);const fine=currentFine(l),b=bookById(l.bookId);
+  const msg=fine>0?`<div class="danger-note">This book is overdue. A fine of <b>${money(fine)}</b> will be recorded.</div>`
+    :`<p class="hint">“${esc(b?.title)}” will be marked returned and the copy made available again.</p>`;
+  confirmModal('Return book?',msg,()=>{returnLoan(l.id);
+    toast(fine>0?`Returned · ${money(fine)} fine recorded.`:'Book returned.','good');refreshBadges();
+    if(activeView==='circulation')drawCircTable();else setView(activeView);},'Confirm return');}
+
+/* ---------- RESERVATIONS ---------- */
+function renderReservations(){
+  el('bar-actions').innerHTML=`<button class="btn btn-primary" id="res-btn">${I.plus} New reservation</button>`;
+  el('res-btn').onclick=()=>openReserveModal();
+  view.innerHTML=`<div class="panel scroll-x" id="res-panel"></div>`;
+  drawResTable();
+}
+function drawResTable(){
+  const list=activeReservations().sort((a,b)=>{const r={ready:0,waiting:1};return (r[a.status]-r[b.status])||(new Date(a.createdAt)-new Date(b.createdAt));});
+  const panel=el('res-panel');
+  if(!list.length){panel.innerHTML=emptyState(I.bookmark,'No active reservations','Members can reserve titles that are currently on loan.','New reservation','res-btn2');
+    const b=el('res-btn2');if(b)b.onclick=()=>openReserveModal();return;}
+  panel.innerHTML=`<table><thead><tr><th>Title</th><th>Reserved by</th><th>Placed</th><th>Queue</th><th>Status</th><th></th></tr></thead><tbody>
+    ${list.map(r=>{const b=bookById(r.bookId),m=memberById(r.memberId);
+      const queue=DB.reservations.filter(x=>x.bookId===r.bookId&&(x.status==='waiting'||x.status==='ready'))
+        .sort((a,b)=>new Date(a.createdAt)-new Date(b.createdAt)).findIndex(x=>x.id===r.id)+1;
+      const st=r.status==='ready'?`<span class="tag avail"><span class="dot"></span>Ready</span>`:`<span class="tag blue"><span class="dot"></span>Waiting</span>`;
+      const issueBtn=r.status==='ready'?`<button class="btn btn-sm btn-brass" data-issue="${r.id}">${I.out} Issue</button>`:'';
+      return `<tr><td><div class="t-title">${esc(b?.title||'—')}</div><div class="t-sub mono">${b?.callno||''}</div></td>
+        <td>${esc(m?.name||'—')}<div class="t-sub mono">${m?.code||''}</div></td><td>${fmtDate(r.createdAt)}</td>
+        <td>#${queue}</td><td>${st}</td>
+        <td><div class="row-actions">${issueBtn}<button class="btn btn-sm btn-danger" data-cancel="${r.id}">Cancel</button></div></td></tr>`;}).join('')}
+  </tbody></table>`;
+  panel.querySelectorAll('[data-cancel]').forEach(b=>b.onclick=()=>{cancelReservation(b.dataset.cancel);toast('Reservation cancelled.','good');refreshBadges();drawResTable();});
+  panel.querySelectorAll('[data-issue]').forEach(b=>b.onclick=()=>{const r=DB.reservations.find(x=>x.id===b.dataset.issue);
+    issueLoan(r.bookId,r.memberId);toast('Book issued to member.','good');refreshBadges();drawResTable();});
+}
+
+/* ---------- FINES ---------- */
+function renderFines(){
+  const rows=DB.members.map(m=>({m,fine:memberOutstandingFine(m.id)})).filter(x=>x.fine>0).sort((a,b)=>b.fine-a.fine);
+  const totalOut=rows.reduce((s,r)=>s+r.fine,0);
+  const collected=DB.loans.filter(l=>l.finePaid&&l.fine>0).reduce((s,l)=>s+l.fine,0);
+  el('bar-actions').innerHTML='';
+  view.innerHTML=`
+    <div class="stat-grid">
+      <div class="stat warn"><div class="lbl">Outstanding fines</div><div class="num">${money(totalOut)}</div><div class="meta">${rows.length} member(s)</div></div>
+      <div class="stat good"><div class="lbl">Collected to date</div><div class="num">${money(collected)}</div><div class="meta">paid fines</div></div>
+      <div class="stat"><div class="lbl">Fine rate</div><div class="num">${money(DB.settings.finePerDay)}</div><div class="meta">per day overdue</div></div>
+    </div>
+    <div class="panel scroll-x">
+      <div class="panel-head"><h3>Members with outstanding fines</h3></div>
+      ${rows.length?`<table><thead><tr><th>Member</th><th>Dept</th><th>Books out</th><th>Outstanding</th><th></th></tr></thead><tbody>
+        ${rows.map(r=>`<tr><td class="t-title">${esc(r.m.name)}<div class="t-sub mono">${r.m.code}</div></td>
+          <td><span class="pill">${esc(r.m.dept||'—')}</span></td><td>${memberActiveLoans(r.m.id)}</td>
+          <td><span class="fine-due">${money(r.fine)}</span></td>
+          <td style="text-align:right"><button class="btn btn-sm btn-primary" data-settle="${r.m.id}">Settle returned fines</button></td></tr>`).join('')}
+      </tbody></table>`:`<div class="empty" style="padding:34px"><div class="ic">${I.coin}</div><h3>No outstanding fines</h3><p>Everything is settled. Nicely run desk.</p></div>`}
+    </div>
+    <p class="hint section-gap">Fines on books still on loan keep accruing and can only be settled after the book is returned.</p>`;
+  view.querySelectorAll('[data-settle]').forEach(b=>b.onclick=()=>{const m=memberById(b.dataset.settle);
+    const unpaid=DB.loans.filter(l=>l.memberId===m.id&&l.returnedAt&&l.fine>0&&!l.finePaid);
+    const sum=unpaid.reduce((s,l)=>s+l.fine,0);
+    if(sum<=0){toast('No settled-book fines to collect yet.','bad');return;}
+    confirmModal('Record payment?',`<p class="hint">Mark <b>${money(sum)}</b> in fines as paid for ${esc(m.name)} (${unpaid.length} returned loan(s)).</p>`,()=>{
+      unpaid.forEach(l=>l.finePaid=true);save();toast(`${money(sum)} recorded as paid.`,'good');refreshBadges();renderFines();},'Record payment');});
+}
+
+/* ---------- REPORTS ---------- */
+function renderReports(){
+  el('bar-actions').innerHTML=`<button class="btn no-print" id="print-rep">${I.print} Print report</button>`;
+  el('print-rep').onclick=()=>window.print();
+  const totalCopies=DB.books.reduce((s,b)=>s+b.copies,0);
+  const totalLoans=DB.loans.length, returned=DB.loans.filter(l=>l.returnedAt).length;
+  // top borrowed
+  const counts={};DB.loans.forEach(l=>counts[l.bookId]=(counts[l.bookId]||0)+1);
+  const top=Object.entries(counts).map(([id,n])=>({b:bookById(id),n})).filter(x=>x.b).sort((a,b)=>b.n-a.n).slice(0,8);
+  const maxTop=Math.max(1,...top.map(x=>x.n));
+  // active members
+  const mc={};DB.loans.forEach(l=>mc[l.memberId]=(mc[l.memberId]||0)+1);
+  const topM=Object.entries(mc).map(([id,n])=>({m:memberById(id),n})).filter(x=>x.m).sort((a,b)=>b.n-a.n).slice(0,8);
+  const maxM=Math.max(1,...topM.map(x=>x.n));
+  // category breakdown
+  const cats={};DB.books.forEach(b=>cats[b.category]=(cats[b.category]||0)+b.copies);
+  const catArr=Object.entries(cats).sort((a,b)=>b[1]-a[1]);
+  const catTotal=catArr.reduce((s,c)=>s+c[1],0)||1;
+  const palette=['#1f4435','#b08433','#3a6280','#a9742a','#3f7d5c','#a8492f','#6b7a5e','#8a6526','#5c6b61'];
+  const overdue=overdueLoans().sort((a,b)=>new Date(a.dueAt)-new Date(b.dueAt));
+  view.innerHTML=`
+    <div class="stat-grid">
+      <div class="stat"><div class="lbl">Total loans (all time)</div><div class="num">${totalLoans}</div><div class="meta">${returned} returned · ${totalLoans-returned} active</div></div>
+      <div class="stat blue"><div class="lbl">Collection size</div><div class="num">${totalCopies}</div><div class="meta">${DB.books.length} titles</div></div>
+      <div class="stat good"><div class="lbl">Utilisation</div><div class="num">${totalCopies?Math.round(activeLoans().length/totalCopies*100):0}%</div><div class="meta">copies currently out</div></div>
+      <div class="stat ${overdue.length?'warn':''}"><div class="lbl">Overdue</div><div class="num">${overdue.length}</div><div class="meta">need follow-up</div></div>
+    </div>
+    <div class="two-col">
+      <div class="panel"><div class="panel-head"><h3>Most borrowed titles</h3></div>
+        ${top.length?`<div class="chart-bars">${top.map(x=>`<div class="bar-row"><div class="name" title="${esc(x.b.title)}">${esc(x.b.title)}</div><div class="bar-track"><div class="bar-fill" style="width:${x.n/maxTop*100}%"></div></div><div class="val">${x.n}</div></div>`).join('')}</div>`:emptyMini('No loan data yet.')}
+      </div>
+      <div class="panel"><div class="panel-head"><h3>Collection by category</h3></div>
+        <div class="donut-wrap">${donut(catArr,catTotal,palette)}
+          <div class="legend">${catArr.map((c,i)=>`<div class="li"><span class="sw" style="background:${palette[i%palette.length]}"></span>${esc(c[0])}<span class="lv">${Math.round(c[1]/catTotal*100)}%</span></div>`).join('')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="panel section-gap"><div class="panel-head"><h3>Most active members</h3></div>
+      ${topM.length?`<div class="chart-bars">${topM.map(x=>`<div class="bar-row"><div class="name">${esc(x.m.name)}</div><div class="bar-track"><div class="bar-fill" style="width:${x.n/maxM*100}%"></div></div><div class="val">${x.n}</div></div>`).join('')}</div>`:emptyMini('No loan data yet.')}
+    </div>
+    <div class="panel section-gap scroll-x"><div class="panel-head"><h3>Overdue follow-up list</h3></div>
+      ${overdue.length?`<table><thead><tr><th>Title</th><th>Member</th><th>Contact</th><th>Due</th><th>Days late</th><th>Fine</th></tr></thead><tbody>
+        ${overdue.map(l=>{const b=bookById(l.bookId),m=memberById(l.memberId);
+          return `<tr><td class="t-title">${esc(b?.title||'—')}</td><td>${esc(m?.name||'—')}</td>
+            <td class="t-sub">${esc(m?.phone||m?.email||'—')}</td><td>${fmtDate(l.dueAt)}</td>
+            <td class="fine-due">${Math.abs(daysBetween(todayISO(),l.dueAt))}d</td><td>${money(currentFine(l))}</td></tr>`;}).join('')}
+      </tbody></table>`:`<div class="empty" style="padding:30px"><p>Nothing overdue. The shelves are happy.</p></div>`}
+    </div>`;
+}
+function donut(arr,total,palette){
+  const r=52,c=2*Math.PI*r;let off=0;const seg=arr.map((d,i)=>{const frac=d[1]/total;const len=frac*c;
+    const s=`<circle r="${r}" cx="70" cy="70" fill="none" stroke="${palette[i%palette.length]}" stroke-width="22" stroke-dasharray="${len} ${c-len}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"/>`;off+=len;return s;}).join('');
+  return `<svg width="140" height="140" viewBox="0 0 140 140">${seg}<circle r="40" cx="70" cy="70" fill="var(--paper)"/><text x="70" y="66" text-anchor="middle" font-family="Fraunces,serif" font-size="22" font-weight="600" fill="#142019">${total}</text><text x="70" y="84" text-anchor="middle" font-size="9" fill="#8a9389" letter-spacing="1">COPIES</text></svg>`;
+}
+function emptyMini(t){return `<div class="empty" style="padding:30px"><p>${t}</p></div>`;}
+
+/* ---------- SETTINGS ---------- */
+function renderSettings(){
+  el('bar-actions').innerHTML='';const s=DB.settings;
+  view.innerHTML=`
+    <div class="two-col">
+      <div>
+        <div class="panel"><div class="panel-head"><h3>Library rules</h3></div>
+          <div class="modal-body" style="display:grid">
+            <label class="fld"><span class="cap">Library / branch name</span><input id="set-name" value="${esc(s.libName)}"/></label>
+            <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <label class="fld"><span class="cap">Loan period (days)</span><input id="set-loan" type="number" min="1" value="${s.loanDays}"/></label>
+              <label class="fld"><span class="cap">Fine per day</span><input id="set-fine" type="number" min="0" step="0.5" value="${s.finePerDay}"/></label>
+            </div>
+            <div class="grid2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <label class="fld"><span class="cap">Currency symbol</span><input id="set-cur" value="${esc(s.currency)}" maxlength="3"/></label>
+              <label class="fld"><span class="cap">Max books per member</span><input id="set-max" type="number" min="1" value="${s.maxBooks}"/></label>
+            </div>
+            <button class="btn btn-primary" id="save-set" style="justify-self:start">Save rules</button>
+          </div>
+        </div>
+        <div class="panel section-gap"><div class="panel-head"><h3>Librarian credentials</h3></div>
+          <div class="modal-body" style="display:grid">
+            <label class="fld"><span class="cap">Username</span><input id="set-user" value="${esc(DB.auth.user)}"/></label>
+            <label class="fld"><span class="cap">New password</span><input id="set-pass" type="password" placeholder="Leave blank to keep current"/></label>
+            <button class="btn btn-primary" id="save-cred" style="justify-self:start">Update credentials</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel"><div class="panel-head"><h3>Data backup</h3></div>
+          <div class="modal-body" style="display:grid">
+            <p class="hint">All data lives in this browser. Export a backup file you can restore later or move to another computer.</p>
+            <button class="btn" id="exp-all">${I.download} Export full backup (.json)</button>
+            <button class="btn" id="imp-all">${I.upload} Restore from backup (.json)</button>
+          </div>
+        </div>
+        <div class="panel section-gap"><div class="panel-head"><h3>Danger zone</h3></div>
+          <div class="modal-body" style="display:grid">
+            <div class="danger-note">Resetting clears all books, members and loans and restores the built-in sample library. This cannot be undone.</div>
+            <button class="btn btn-danger" style="border:1px solid var(--rust)" id="reset-all">Reset to sample library</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  el('save-set').onclick=()=>{const ln=el('set-name').value.trim()||'Library';
+    DB.settings={libName:ln,loanDays:Math.max(1,Number(el('set-loan').value)||14),
+      finePerDay:Math.max(0,Number(el('set-fine').value)||0),currency:el('set-cur').value.trim()||'৳',
+      maxBooks:Math.max(1,Number(el('set-max').value)||4)};save();
+    el('brand-name').textContent=DB.settings.libName;toast('Library rules saved.','good');};
+  el('save-cred').onclick=()=>{const u=el('set-user').value.trim()||'admin';const p=el('set-pass').value;
+    DB.auth.user=u;if(p)DB.auth.pass=p;save();toast('Credentials updated.','good');};
+  el('exp-all').onclick=exportBackup;
+  el('imp-all').onclick=()=>triggerImport('backup');
+  el('reset-all').onclick=()=>confirmModal('Reset library?',`<div class="danger-note">This clears all data and restores the sample library. This cannot be undone.</div>`,()=>{
+    seed();refreshBadges();el('brand-name').textContent=DB.settings.libName;setView('dashboard');toast('Sample library restored.','good');},'Reset everything');
+}
+
+/* ---------- ABOUT ---------- */
+function renderAbout(){
+  el('bar-actions').innerHTML='';
+  view.innerHTML=`
+    <div class="panel about-card">
+      <div class="about-hero"><div class="crest">F</div>
+        <h2>Library Management System</h2>
+        <div class="sub">Faridpur Polytechnic Institute</div>
+      </div>
+      <div class="about-body">
+        <dl class="kv" style="grid-template-columns:auto 1fr;gap:10px 22px">
+          <dt>Institute</dt><dd>Faridpur Polytechnic Institute</dd>
+          <dt>Department</dt><dd>Computer Science &amp; Technology (CST)</dd>
+          <dt>Submitted by</dt><dd>Musaddik</dd>
+          <dt>Roll number</dt><dd class="mono">731286</dd>
+          <dt>Semester</dt><dd>7th Semester</dd>
+          <dt>Project type</dt><dd>Single-file web application (HTML, CSS, JavaScript)</dd>
+        </dl>
+        <p class="hint section-gap" style="line-height:1.6">This system manages a library&rsquo;s daily operations — a searchable book catalogue, member records, issue/return circulation with automatic due dates and fines, reservations, a fines ledger, reports with charts, and configurable rules. All data is stored locally in the browser, so the application runs entirely offline with no server or installation required.</p>
+        <div class="info-note section-gap">Modules: Dashboard · Circulation · Reservations · Fines · Catalogue · Members · Reports · Settings.</div>
+      </div>
+    </div>`;
+}
+
+/* ---------- Status tag ---------- */
+function statusTag(st){if(st==='overdue')return `<span class="tag over"><span class="dot"></span>Overdue</span>`;
+  if(st==='returned')return `<span class="tag none">Returned</span>`;return `<span class="tag avail"><span class="dot"></span>On loan</span>`;}
+
+/* =====================================================================
+   MODALS & DETAIL VIEWS
+   ===================================================================== */
+const overlay=el('overlay'),modal=el('modal');
+function openModal(html,wide){modal.className='modal'+(wide?' wide':'');modal.innerHTML=html;overlay.classList.add('open');}
+function closeModal(){overlay.classList.remove('open');modal.innerHTML='';}
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&overlay.classList.contains('open'))closeModal();});
+function field(cap,inner,errId){return `<label class="fld"><span class="cap">${cap}</span>${inner}${errId?`<span class="field-err" id="${errId}"></span>`:''}</label>`;}
+function setErr(id,msg){const e=el(id);if(!e)return;e.textContent=msg;e.classList.toggle('show',!!msg);}
+
+const CATS=['Fiction','Sci-Fi','Thriller','History','Memoir','Psychology','Self-Help','Technology','Children','Reference','General'];
+function openBookModal(id){const b=id?bookById(id):null;
+  openModal(`
+    <div class="modal-head"><div><div class="eyebrow">${b?'Edit':'New'} title</div><h3>${b?esc(b.title):'Add a title'}</h3></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      ${field('Title',`<input id="f-title" value="${b?esc(b.title):''}" placeholder="e.g. Clean Code"/>`,'e-title')}
+      ${field('Author',`<input id="f-author" value="${b?esc(b.author):''}" placeholder="e.g. Robert C. Martin"/>`,'e-author')}
+      <div class="grid2">
+        ${field('Category',`<select id="f-cat">${CATS.map(c=>`<option ${b&&b.category===c?'selected':''}>${c}</option>`).join('')}</select>`)}
+        ${field('Year',`<input id="f-year" type="number" value="${b&&b.year?b.year:''}" placeholder="2020"/>`)}
+      </div>
+      <div class="grid2">
+        ${field('ISBN',`<input id="f-isbn" value="${b?esc(b.isbn):''}" placeholder="978-…"/>`)}
+        ${field('Shelf location',`<input id="f-shelf" value="${b?esc(b.shelf):''}" placeholder="e.g. T-02"/>`)}
+      </div>
+      ${field('Number of copies',`<input id="f-copies" type="number" min="1" value="${b?b.copies:1}"/>`,'e-copies')}
+      ${b?`<p class="hint">Call number <b class="mono">${b.callno}</b> stays fixed.</p>`:''}
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="save-book">${b?'Save changes':'Add to collection'}</button></div>`);
+  el('save-book').onclick=()=>{const t=el('f-title').value.trim(),a=el('f-author').value.trim(),c=Number(el('f-copies').value);
+    let ok=true;setErr('e-title',t?'':'Title is required');if(!t)ok=false;setErr('e-author',a?'':'Author is required');if(!a)ok=false;
+    if(id){const ol=copiesOnLoan(id);if(c<ol){setErr('e-copies',`${ol} copies on loan — can't reduce below that.`);ok=false;}}
+    if(!ok)return;const data={title:t,author:a,category:el('f-cat').value,year:el('f-year').value,isbn:el('f-isbn').value,shelf:el('f-shelf').value,copies:c};
+    if(id){updateBook(id,data);toast('Title updated.','good');}else{addBook(data);toast('Title added.','good');}
+    closeModal();refreshBadges();if(activeView==='catalogue')renderCatalogue();};
+  setTimeout(()=>el('f-title').focus(),50);}
+
+const DEPTS=['CST','Electrical','Civil','Mechanical','Electronics','Power','Other'];
+function openMemberModal(id){const m=id?memberById(id):null;
+  openModal(`
+    <div class="modal-head"><div><div class="eyebrow">${m?'Edit':'New'} member</div><h3>${m?esc(m.name):'Register a member'}</h3></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      ${field('Full name',`<input id="f-name" value="${m?esc(m.name):''}" placeholder="e.g. Amara Okafor"/>`,'e-name')}
+      ${field('Department',`<select id="f-dept">${DEPTS.map(d=>`<option ${m&&m.dept===d?'selected':''}>${d}</option>`).join('')}</select>`)}
+      <div class="grid2">
+        ${field('Email',`<input id="f-email" type="email" value="${m?esc(m.email):''}" placeholder="name@email.com"/>`)}
+        ${field('Phone',`<input id="f-phone" value="${m?esc(m.phone):''}" placeholder="01711-000000"/>`)}
+      </div>
+      ${m?`<p class="hint">Member no. <b class="mono">${m.code}</b> · joined ${fmtDate(m.joined)}</p>`:''}
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="save-member">${m?'Save changes':'Register member'}</button></div>`);
+  el('save-member').onclick=()=>{const n=el('f-name').value.trim();setErr('e-name',n?'':'Name is required');if(!n)return;
+    const data={name:n,dept:el('f-dept').value,email:el('f-email').value,phone:el('f-phone').value};
+    if(id){updateMember(id,data);toast('Member updated.','good');}else{addMember(data);toast('Member registered.','good');}
+    closeModal();refreshBadges();if(activeView==='members')drawMemberTable();};
+  setTimeout(()=>el('f-name').focus(),50);}
+
+function openIssueModal(presetBook,presetMember){
+  const availBooks=DB.books.filter(b=>copiesAvailable(b)>0);
+  if(!DB.members.length){toast('Add a member first.','bad');return;}
+  if(!availBooks.length){toast('No copies available to issue.','bad');return;}
+  const due=addDays(todayISO(),DB.settings.loanDays);
+  openModal(`
+    <div class="modal-head"><div><div class="eyebrow">Circulation</div><h3>Issue a book</h3></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      ${field('Book',`<select id="i-book">${availBooks.map(b=>`<option value="${b.id}" ${presetBook===b.id?'selected':''}>${esc(b.title)} — ${esc(b.author)} (${copiesAvailable(b)} avail.)</option>`).join('')}</select>`)}
+      ${field('Member',`<select id="i-member">${DB.members.map(m=>`<option value="${m.id}" ${presetMember===m.id?'selected':''}>${esc(m.name)} · ${m.code}${memberActiveLoans(m.id)?` (${memberActiveLoans(m.id)} out)`:''}</option>`).join('')}</select>`)}
+      <div class="field-err" id="i-err"></div>
+      <p class="hint">Loan period ${DB.settings.loanDays} days · due <b>${fmtDate(due)}</b> · late fine ${money(DB.settings.finePerDay)}/day · limit ${DB.settings.maxBooks} books/member.</p>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-brass" id="confirm-issue">${I.out} Issue book</button></div>`);
+  el('confirm-issue').onclick=()=>{const bid=el('i-book').value,mid=el('i-member').value;
+    if(memberActiveLoans(mid)>=DB.settings.maxBooks){setErr('i-err',`This member already has the maximum ${DB.settings.maxBooks} books out.`);return;}
+    issueLoan(bid,mid);toast('Book issued.','good');closeModal();refreshBadges();
+    if(activeView==='circulation')drawCircTable();else setView(activeView);};
+}
+function openReserveModal(){
+  if(!DB.members.length||!DB.books.length){toast('Need at least one book and member.','bad');return;}
+  openModal(`
+    <div class="modal-head"><div><div class="eyebrow">Reservation</div><h3>Place a reservation</h3></div><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      ${field('Book',`<select id="r-book">${DB.books.map(b=>`<option value="${b.id}">${esc(b.title)} (${copiesAvailable(b)} avail.)</option>`).join('')}</select>`)}
+      ${field('Member',`<select id="r-member">${DB.members.map(m=>`<option value="${m.id}">${esc(m.name)} · ${m.code}</option>`).join('')}</select>`)}
+      <p class="hint">If no copy is free the member joins a waiting queue and is marked “ready” when a copy is returned.</p>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="confirm-res">Reserve</button></div>`);
+  el('confirm-res').onclick=()=>{addReservation(el('r-book').value,el('r-member').value);
+    toast('Reservation placed.','good');closeModal();refreshBadges();if(activeView==='reservations')drawResTable();};
+}
+
+/* Detail views */
+function openBookDetail(id){const b=bookById(id);if(!b)return;
+  const hist=DB.loans.filter(l=>l.bookId===id).sort((a,b)=>new Date(b.issuedAt)-new Date(a.issuedAt));
+  const avail=copiesAvailable(b);
+  openModal(`
+    <div class="modal-head"><div class="detail-head"><div class="avatar">${esc(b.title[0]||'?')}</div>
+      <div><div class="eyebrow">${esc(b.category)}</div><h3>${esc(b.title)}</h3><div class="t-sub">${esc(b.author)}</div></div></div>
+      <button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <dl class="kv"><dt>Call no.</dt><dd class="mono">${b.callno}</dd><dt>ISBN</dt><dd class="mono">${esc(b.isbn||'—')}</dd>
+        <dt>Shelf</dt><dd class="mono">${esc(b.shelf||'—')}</dd><dt>Year</dt><dd>${b.year||'—'}</dd>
+        <dt>Copies</dt><dd>${avail} of ${b.copies} available</dd></dl>
+      <div class="panel" style="box-shadow:none"><div class="panel-head"><h3 style="font-size:14px">Loan history (${hist.length})</h3></div>
+        <div class="scroll-x" style="max-height:240px;overflow-y:auto">${hist.length?`<table><thead><tr><th>Member</th><th>Issued</th><th>Status</th></tr></thead><tbody>
+          ${hist.map(l=>{const m=memberById(l.memberId);return `<tr><td>${esc(m?.name||'—')}</td><td>${fmtDate(l.issuedAt)}</td><td>${statusTag(loanStatus(l))}</td></tr>`;}).join('')}</tbody></table>`:`<div class="empty" style="padding:24px"><p>Never borrowed yet.</p></div>`}</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      <button class="btn" id="d-edit">${I.edit} Edit</button>
+      ${avail>0?`<button class="btn btn-brass" id="d-issue">${I.out} Issue</button>`:`<button class="btn btn-primary" id="d-reserve">${I.bookmark} Reserve</button>`}
+    </div>`,true);
+  el('d-edit').onclick=()=>{closeModal();openBookModal(id);};
+  if(el('d-issue'))el('d-issue').onclick=()=>{closeModal();openIssueModal(id);};
+  if(el('d-reserve'))el('d-reserve').onclick=()=>{closeModal();openReserveModal();};
+}
+function openMemberDetail(id){const m=memberById(id);if(!m)return;
+  const loans=DB.loans.filter(l=>l.memberId===id).sort((a,b)=>new Date(b.issuedAt)-new Date(a.issuedAt));
+  const fine=memberOutstandingFine(id);
+  openModal(`
+    <div class="modal-head"><div class="detail-head"><div class="avatar">${esc(m.name[0]||'?')}</div>
+      <div><div class="eyebrow">${esc(m.dept||'Member')}</div><h3>${esc(m.name)}</h3><div class="t-sub mono">${m.code}</div></div></div>
+      <button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <dl class="kv"><dt>Email</dt><dd>${esc(m.email||'—')}</dd><dt>Phone</dt><dd>${esc(m.phone||'—')}</dd>
+        <dt>Joined</dt><dd>${fmtDate(m.joined)}</dd><dt>Books out</dt><dd>${memberActiveLoans(id)} of ${DB.settings.maxBooks}</dd>
+        <dt>Fines due</dt><dd>${fine>0?`<span class="fine-due">${money(fine)}</span>`:'—'}</dd></dl>
+      <div class="panel" style="box-shadow:none"><div class="panel-head"><h3 style="font-size:14px">Borrowing history (${loans.length})</h3></div>
+        <div class="scroll-x" style="max-height:240px;overflow-y:auto">${loans.length?`<table><thead><tr><th>Title</th><th>Issued</th><th>Status</th></tr></thead><tbody>
+          ${loans.map(l=>{const b=bookById(l.bookId);return `<tr><td>${esc(b?.title||'—')}</td><td>${fmtDate(l.issuedAt)}</td><td>${statusTag(loanStatus(l))}</td></tr>`;}).join('')}</tbody></table>`:`<div class="empty" style="padding:24px"><p>No loans yet.</p></div>`}</div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Close</button>
+      <button class="btn" id="dm-edit">${I.edit} Edit</button>
+      <button class="btn btn-brass" id="dm-issue">${I.out} Issue book</button></div>`,true);
+  el('dm-edit').onclick=()=>{closeModal();openMemberModal(id);};
+  el('dm-issue').onclick=()=>{closeModal();openIssueModal(null,id);};
+}
+
+function confirmModal(title,bodyHtml,onYes,yesLabel){
+  openModal(`<div class="modal-head"><h3>${title}</h3><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">${bodyHtml}</div>
+    <div class="modal-foot"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" id="confirm-yes">${yesLabel||'Delete'}</button></div>`);
+  el('confirm-yes').onclick=()=>{closeModal();onYes();};}
+
+/* =====================================================================
+   IMPORT / EXPORT
+   ===================================================================== */
+function download(filename,text,type){const blob=new Blob([text],{type:type||'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();URL.revokeObjectURL(a.href);}
+function csvCell(v){v=String(v==null?'':v);return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v;}
+function exportBooksCSV(){const rows=[['Title','Author','Category','ISBN','Year','Copies','Shelf','CallNo']];
+  DB.books.forEach(b=>rows.push([b.title,b.author,b.category,b.isbn,b.year||'',b.copies,b.shelf||'',b.callno]));
+  download('catalogue.csv',rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv');toast('Catalogue exported.','good');}
+function exportMembersCSV(){const rows=[['Name','Department','Email','Phone','MemberNo','Joined']];
+  DB.members.forEach(m=>rows.push([m.name,m.dept,m.email,m.phone,m.code,fmtDate(m.joined)]));
+  download('members.csv',rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv');toast('Members exported.','good');}
+function exportBackup(){download('library-backup.json',JSON.stringify(DB,null,2),'application/json');toast('Backup exported.','good');}
+
+let importMode=null;
+function triggerImport(mode){importMode=mode;el('file-input').value='';
+  el('file-input').accept=mode==='backup'?'.json':'.csv';el('file-input').click();}
+el('file-input').onchange=e=>{const f=e.target.files[0];if(!f)return;const reader=new FileReader();
+  reader.onload=()=>{try{
+    if(importMode==='backup'){const d=JSON.parse(reader.result);if(!d.books||!d.seq)throw 0;
+      DB={...DB,...d};DB.settings={...DEFAULT_SETTINGS,...(d.settings||{})};DB.auth={...DEFAULT_AUTH,...(d.auth||{})};
+      DB.reservations=d.reservations||[];save();refreshBadges();el('brand-name').textContent=DB.settings.libName;
+      setView('dashboard');toast('Backup restored.','good');return;}
+    const rows=parseCSV(reader.result);if(rows.length<2){toast('No rows found in file.','bad');return;}
+    const header=rows[0].map(h=>h.toLowerCase().trim());let added=0;
+    if(importMode==='books'){const ti=header.indexOf('title'),ai=header.indexOf('author');
+      if(ti<0||ai<0){toast('CSV needs Title and Author columns.','bad');return;}
+      const ci=header.indexOf('category'),ii=header.indexOf('isbn'),yi=header.indexOf('year'),cpi=header.indexOf('copies'),si=header.indexOf('shelf');
+      rows.slice(1).forEach(r=>{if(!r[ti])return;addBook({title:r[ti],author:r[ai]||'Unknown',
+        category:ci>=0?r[ci]:'General',isbn:ii>=0?r[ii]:'',year:yi>=0?r[yi]:'',copies:cpi>=0?r[cpi]:1,shelf:si>=0?r[si]:''},true);added++;});
+      save();refreshBadges();renderCatalogue();toast(`${added} title(s) imported.`,'good');}
+    else if(importMode==='members'){const ni=header.indexOf('name');
+      if(ni<0){toast('CSV needs a Name column.','bad');return;}
+      const di=header.indexOf('department'),ei=header.indexOf('email'),pi=header.indexOf('phone');
+      rows.slice(1).forEach(r=>{if(!r[ni])return;addMember({name:r[ni],dept:di>=0?r[di]:'',
+        email:ei>=0?r[ei]:'',phone:pi>=0?r[pi]:''},true);added++;});
+      save();refreshBadges();drawMemberTable();toast(`${added} member(s) imported.`,'good');}
+  }catch(err){toast('Could not read that file.','bad');}};
+  reader.readAsText(f);};
+function parseCSV(text){const rows=[];let row=[],cur='',q=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(q){if(c==='"'){if(text[i+1]==='"'){cur+='"';i++;}else q=false;}else cur+=c;}
+    else{if(c==='"')q=true;else if(c===','){row.push(cur);cur='';}
+      else if(c==='\n'||c==='\r'){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cur);rows.push(row);row=[];cur='';}
+      else cur+=c;}}
+  if(cur!==''||row.length){row.push(cur);rows.push(row);}
+  return rows.filter(r=>r.some(c=>c.trim()!==''));}
+
+/* =====================================================================
+   HELPERS / UI
+   ===================================================================== */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function emptyState(icon,title,text,btn,btnId){return `<div class="empty"><div class="ic">${icon}</div><h3>${title}</h3><p>${text}</p>${btn?`<button class="btn btn-primary" id="${btnId}">${I.plus} ${btn}</button>`:''}</div>`;}
+function toast(msg,kind){const t=document.createElement('div');t.className='toast'+(kind?' '+kind:'');t.textContent=msg;
+  el('toasts').appendChild(t);setTimeout(()=>{t.style.opacity='0';t.style.transform='translateX(40px)';t.style.transition='.3s';setTimeout(()=>t.remove(),300);},2600);}
+function closeSide(){el('side').classList.remove('open');el('scrim').classList.remove('open');}
+el('menu-btn').onclick=()=>{el('side').classList.add('open');el('scrim').classList.add('open');};
+el('scrim').onclick=closeSide;
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+el('logout-btn').onclick=()=>{sessionStorage.removeItem(SESSION_KEY);location.reload();};
+
+/* =====================================================================
+   AUTH / BOOT
+   ===================================================================== */
+function doLogin(){const u=el('lg-user').value.trim(),p=el('lg-pass').value;
+  if(u===DB.auth.user&&p===DB.auth.pass){sessionStorage.setItem(SESSION_KEY,'1');showApp();}
+  else{el('lg-err').classList.add('show');}}
+el('lg-btn').onclick=doLogin;
+['lg-user','lg-pass'].forEach(id=>el(id).addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();}));
+
+function showApp(){el('login').classList.add('hidden');el('app').classList.remove('hidden');
+  el('brand-name').textContent=DB.settings.libName;refreshBadges();setView('dashboard');}
+
+if(!load())seed();
+if(sessionStorage.getItem(SESSION_KEY)==='1'){showApp();}
+else{setTimeout(()=>el('lg-user').focus(),100);}
+</script>
+</body>
+</html>
